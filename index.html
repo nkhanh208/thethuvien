@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Đăng ký Thẻ Thư viện NHC</title>
+    <!-- Tích hợp Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tích hợp FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tích hợp SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        /* === VIEW MANAGEMENT === */
+        .view-section { display: none !important; opacity: 0; transform: translateY(20px); }
+        .view-section.active { 
+            display: block !important; 
+            animation: fadeSlideIn 0.5s ease-out forwards;
+        }
+        #view-loading.active { 
+            display: flex !important; 
+            animation: fadeSlideIn 0.4s ease-out forwards;
+        }
+
+        /* === KEYFRAME ANIMATIONS === */
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        @keyframes bounce-soft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* === GLASSMORPHISM === */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* === CUSTOM SCROLLBAR === */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* === LOADER === */
+        .loader {
+            width: 44px;
+            height: 44px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3b82f6;
+            border-right: 4px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+        .loader::before {
+            content: '';
+            position: absolute;
+            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            border: 3px solid transparent;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite reverse;
+        }
+
+        .loader-sm {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* === BUTTON EFFECTS === */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+        }
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(100, 116, 139, 0.2);
+        }
+
+        /* === INPUT EFFECTS === */
+        .input-focus {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-focus:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* === CARD EFFECTS === */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* === DIGITAL CARD DESIGN === */
+        .digital-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .digital-card::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite;
+        }
+        .digital-card::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            bottom: -50px;
+            left: -50px;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        /* === ICONS === */
+        .icon-pulse {
+            animation: bounce-soft 2s ease-in-out infinite;
+        }
+
+        /* === TOAST ANIMATION === */
+        .toast-enter {
+            animation: slideDown 0.4s ease-out forwards;
+        }
+        .toast-exit {
+            animation: slideUp 0.3s ease-in forwards;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 1; transform: translate(-50%, 0); }
+            to { opacity: 0; transform: translate(-50%, -20px); }
+        }
+
+        /* === SKELETON LOADING === */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* === DOT PATTERN BACKGROUND === */
+        .dot-pattern {
+            background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* === SUBTLE GRADIENT BACKGROUND === */
+        .bg-subtle-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+        }
+    </style>
+</head>
+<body class="bg-white font-sans text-slate-800 min-h-screen dot-pattern">
+
+    <!-- GLASS NAVBAR -->
+    <nav id="navbar" class="glass shadow-sm sticky top-0 z-50 border-b border-slate-100/50">
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3 cursor-pointer group" id="nav-home">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-book-reader text-white text-lg"></i>
+                    </div>
+                    <span class="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">Thư viện NHC</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-medium text-slate-500">Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- GLASS TOAST NOTIFICATION -->
+    <div id="toast-container" class="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none">
+        <div id="toast-message" class="glass shadow-lg rounded-2xl p-4 flex items-center gap-3 border">
+            <span id="toast-text" class="text-sm font-medium"></span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-md mx-auto mt-8 px-4 pb-12 w-full">
+
+        <!-- 1. LOADING SCREEN -->
+        <div id="view-loading" class="view-section active flex-col items-center justify-center min-h-[60vh]">
+            <div class="relative mb-6">
+                <div class="loader"></div>
+            </div>
+            <div class="text-center">
+                <p class="text-slate-700 font-semibold text-lg mb-1">Đang kết nối hệ thống</p>
+                <p class="text-slate-400 text-sm">Vui lòng chờ trong giây lát...</p>
+            </div>
+            <div class="mt-8 flex gap-2">
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+            </div>
+        </div>
+
+        <!-- 2. FIREBASE ERROR SCREEN -->
+        <div id="view-error" class="view-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-red-100 card-hover">
+                <div class="relative">
+                    <div class="absolute -top-2 -right-2 w-16 h-16 bg-red-50 rounded-full"></div>
+                    <div class="w-20 h-20 bg-gradient-to-br from-red-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-500/30">
+                        <i class="fas fa-exclamation-triangle text-3xl text-white"></i>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-3 text-center">Lỗi kết nối Firebase</h2>
+                <p id="error-text" class="text-red-500 font-medium mb-4 text-center">Chưa bật tính năng Đăng nhập ẩn danh.</p>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        Vui lòng vào Firebase Console > Authentication > Sign-in method > Bật Anonymous.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. HOME SCREEN -->
+        <div id="view-home" class="view-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover">
+                <!-- Decorative element -->
+                <div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -z-10"></div>
+                
+                <div class="text-center mb-8">
+                    <div class="relative inline-block mb-4">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
+                            <i class="fas fa-address-card text-3xl text-blue-600"></i>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-white flex items-center justify-center">
+                            <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-800 mb-2">Thẻ Thư viện</h1>
+                    <p class="text-slate-500 text-sm">Tra cứu hoặc đăng ký thẻ mới</p>
+                </div>
+
+                <form id="form-check-student" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Mã Học Sinh / Mã Khách</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            </div>
+                            <input type="text" id="input-student-id" class="input-focus w-full pl-12 pr-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm font-medium bg-slate-50/50" placeholder="VD: 7581125926">
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-submit-check" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center text-lg">
+                        <i class="fas fa-search mr-3"></i>
+                        Kiểm tra mã
+                    </button>
+                </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100">
+                    <p class="text-center text-sm text-slate-500 mb-4">Bạn không phải là học sinh của trường?</p>
+                    <button id="btn-to-guest" type="button" class="btn-secondary w-full text-slate-700 font-semibold py-4 px-6 rounded-2xl flex justify-center items-center gap-3">
+                        <i class="fas fa-user-plus text-slate-400"></i>
+                        <span>Đăng ký diện người ngoài</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. STUDENT REGISTRATION FORM -->
+        <div id="view-student-form" class="view-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover">
+                <button type="button" class="btn-back flex items-center text-slate-500 hover:text-blue-600 mb-6 text-sm font-semibold transition-colors group">
+                    <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i> Quay lại
+                </button>
+                
+                <h2 class="text-2xl font-bold mb-6 flex items-center text-slate-800">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-blue-500/30">
+                        <i class="fas fa-user-graduate text-white"></i>
+                    </div>
+                    Hồ sơ Học sinh
+                </h2>
+                
+                <!-- Student Info Card -->
+                <div class="bg-gradient-to-br from-blue-50 to-white p-6 rounded-2xl border border-blue-100 mb-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-full -mr-10 -mt-10 opacity-50"></div>
+                    <div class="relative z-10">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <span class="text-[11px] uppercase tracking-wider text-blue-500 font-bold block mb-1">Họ và tên</span>
+                                <span id="st-info-name" class="font-bold text-xl text-slate-800"></span>
+                            </div>
+                            <div>
+                                <span class="text-[11px] uppercase tracking-wider text-blue-500 font-bold block mb-1">Lớp</span>
+                                <span id="st-info-class" class="font-semibold text-slate-700 text-lg"></span>
+                            </div>
+                            <div>
+                                <span class="text-[11px] uppercase tracking-wider text-blue-500 font-bold block mb-1">Mã HS</span>
+                                <span id="st-info-id" class="font-mono font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg shadow-sm"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="form-register-student" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fas fa-phone absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
+                            <input type="tel" id="st-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Email <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
+                            <input type="email" id="st-input-email" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="email@example.com">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl mt-6 shadow-lg text-lg">
+                        <i class="fas fa-id-card mr-3"></i>
+                        Đăng ký & Nhận Thẻ
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 5. GUEST REGISTRATION FORM -->
+        <div id="view-guest-form" class="view-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover">
+                <button type="button" class="btn-back flex items-center text-slate-500 hover:text-blue-600 mb-6 text-sm font-semibold transition-colors group">
+                    <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i> Quay lại
+                </button>
+
+                <h2 class="text-2xl font-bold mb-6 flex items-center text-slate-800">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-green-500/30">
+                        <i class="fas fa-users text-white"></i>
+                    </div>
+                    Khách ngoài trường
+                </h2>
+
+                <form id="form-register-guest" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Họ và tên <span class="text-red-500">*</span></label>
+                        <input type="text" id="g-input-name" required class="input-focus w-full px-5 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập họ và tên">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fas fa-phone absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
+                            <input type="tel" id="g-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Email <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
+                            <input type="email" id="g-input-email" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="email@example.com">
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-blue-50 to-green-50 p-5 rounded-2xl border border-blue-100 flex items-start gap-4">
+                        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <i class="fas fa-shield-alt text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-700 font-medium mb-1">Xác thực bảo mật</p>
+                            <p class="text-xs text-slate-500 leading-relaxed">
+                                Hệ thống sẽ gửi một mã OTP xác thực đến email của bạn để hoàn tất việc đăng ký thẻ.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-send-otp" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl mt-6 shadow-lg flex justify-center items-center text-lg">
+                        <span id="btn-send-otp-text"><i class="fas fa-paper-plane mr-3"></i>Gửi mã OTP</span>
+                        <div id="btn-send-otp-loading" class="hidden ml-3 loader-sm"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 6. OTP VERIFICATION SCREEN -->
+        <div id="view-otp" class="view-section">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover text-center">
+                <button type="button" id="btn-back-to-guest" class="flex items-center text-slate-500 hover:text-blue-600 mb-6 text-sm font-semibold transition-colors group ml-0">
+                    <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i> Đổi thông tin
+                </button>
+                
+                <div class="relative inline-block mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">
+                        <i class="fas fa-envelope-open-text text-3xl text-green-600"></i>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-3 border-white flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-slate-800">Xác thực Email</h2>
+                <p class="text-slate-500 text-sm mb-8">Mã bảo mật đã được gửi đến <strong id="display-email" class="text-blue-600"></strong></p>
+
+                <form id="form-verify-otp">
+                    <input type="text" id="input-otp" maxlength="6" required class="input-focus w-full text-center tracking-[0.5em] text-3xl font-mono font-bold px-6 py-5 border-2 border-slate-200 rounded-2xl focus:outline-none mb-8 shadow-inner bg-slate-50" placeholder="------">
+                    <button type="submit" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl shadow-lg text-lg">
+                        <i class="fas fa-check-circle mr-3"></i>
+                        Xác thực & Tạo Thẻ
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 7. DIGITAL CARD -->
+        <div id="view-digital-card" class="view-section">
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-100/50 text-center max-w-sm mx-auto">
+                <!-- Success Header -->
+                <div class="mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-400 to-green-500 rounded-2xl mb-4 shadow-lg shadow-green-500/30">
+                        <i class="fas fa-check text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Thẻ Thư Viện</h2>
+                    <p class="text-sm text-slate-500 mt-1">Xuất trình thẻ này khi mượn/trả sách</p>
+                </div>
+
+                <!-- Digital Card Design -->
+                <div class="digital-card rounded-2xl shadow-2xl p-6 text-white relative overflow-hidden mb-8 text-left">
+                    <!-- Decorative circles -->
+                    <div class="absolute -right-16 -top-16 w-40 h-40 bg-white opacity-10 rounded-full"></div>
+                    <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+
+                    <div class="flex justify-between items-start mb-10 relative z-10">
+                        <div>
+                            <h3 class="text-[10px] uppercase tracking-widest opacity-80 font-bold mb-2">NHC Library</h3>
+                            <div class="text-2xl font-extrabold tracking-tight drop-shadow-sm leading-tight" id="card-name">Nguyễn Văn A</div>
+                            <div class="text-indigo-100 text-xs mt-3 font-medium bg-white/20 inline-block px-3 py-1.5 rounded-lg shadow-sm" id="card-role">Học sinh - 12A1</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl shadow-sm flex-shrink-0">
+                            <i class="fas fa-qrcode text-5xl text-slate-800"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 relative z-10">
+                        <div class="flex justify-between border-b border-white/20 pb-3 items-end">
+                            <span class="text-indigo-200 text-[10px] uppercase tracking-widest font-semibold">Mã Thẻ</span>
+                            <span class="font-mono font-bold tracking-widest text-xl drop-shadow-sm" id="card-id">7581125926</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-indigo-200 text-[10px] uppercase tracking-widest font-semibold">SĐT</span>
+                            <span class="font-medium tracking-wide" id="card-phone">0123456789</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-indigo-200 text-[10px] uppercase tracking-widest font-semibold">Email</span>
+                            <span class="font-medium opacity-90 text-xs" id="card-email">email@example.com</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button type="button" class="btn-primary w-full text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex justify-center items-center">
+                        <i class="fas fa-download mr-2"></i> Lưu thẻ
+                    </button>
+                    <button type="button" class="btn-back w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-colors flex justify-center items-center">
+                        <i class="fas fa-home mr-2 text-slate-400"></i> Quay về trang chủ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        // CẤU HÌNH FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgpPUYV5lqZ_5zUua8Q_ThNEIkPsEg2do",
+            authDomain: "thuvien-44050.firebaseapp.com",
+            projectId: "thuvien-44050",
+            storageBucket: "thuvien-44050.firebasestorage.app",
+            messagingSenderId: "926801895944",
+            appId: "1:926801895944:web:72a42302cfc85a998da7bd",
+            measurementId: "G-TMJB630SHL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let foundStudentData = null;
+        let generatedOtp = '';
+        let guestTempData = {};
+
+        // 1. QUẢN LÝ GIAO DIỆN CHÍNH
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none';
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+            });
+            const activeView = document.getElementById(viewId);
+            activeView.style.display = 'block';
+            // Trigger reflow
+            activeView.offsetHeight;
+            activeView.classList.add('active');
+        }
+
+        function showToast(text, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const message = document.getElementById('toast-message');
+            const toastText = document.getElementById('toast-text');
+            
+            toastText.innerText = text;
+            
+            if (type === 'error') {
+                message.className = 'glass shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-red-100';
+                message.innerHTML = `<div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-circle text-red-500"></i></div><span class="text-sm font-medium text-red-700">${text}</span>`;
+            } else {
+                message.className = 'glass shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-green-100';
+                message.innerHTML = `<div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-check-circle text-green-500"></i></div><span class="text-sm font-medium text-green-700">${text}</span>`;
+            }
+            
+            container.classList.remove('opacity-0', 'pointer-events-none');
+            container.classList.add('toast-enter');
+            
+            setTimeout(() => {
+                container.classList.add('opacity-0', 'pointer-events-none');
+                container.classList.remove('toast-enter');
+            }, 3000);
+        }
+
+        // Hàm đổ dữ liệu lên Thẻ Thư Viện
+        function showDigitalCard(data, type, guestId = null) {
+            document.getElementById('card-name').innerText = data.name;
+            document.getElementById('card-role').innerText = type === 'student' ? `Học sinh - Lớp ${data.class}` : 'Khách ngoài trường';
+            document.getElementById('card-id').innerText = type === 'student' ? data.studentId : guestId;
+            document.getElementById('card-phone').innerText = data.phone || 'Chưa cập nhật';
+            document.getElementById('card-email').innerText = data.email || 'Chưa cập nhật';
+            
+            showView('view-digital-card');
+        }
+
+        // 2. KHỞI TẠO APP
+        async function initApp() {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                document.getElementById('error-text').innerText = error.message;
+                showView('view-error');
+            }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    showView('view-home');
+                }
+            });
+        }
+
+        // 3. LOGIC KIỂM TRA & TRUY XUẤT THẺ THÔNG MINH
+        document.getElementById('form-check-student').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('input-student-id').value.trim();
+            if(!id) return showToast("Vui lòng nhập mã học sinh hoặc mã khách");
+
+            const btn = document.getElementById('btn-submit-check');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang tìm kiếm...';
+            btn.disabled = true;
+            
+            try {
+                // BƯỚC 1: Kiểm tra xem đã ĐĂNG KÝ HỌC SINH chưa?
+                const studentRef = doc(db, 'students', id);
+                const studentSnap = await getDoc(studentRef);
+                if (studentSnap.exists()) {
+                    showDigitalCard(studentSnap.data(), 'student');
+                    showToast("Đã tìm thấy thẻ của bạn!", "success");
+                    return;
+                }
+
+                // BƯỚC 2: Kiểm tra xem có phải là KHÁCH đã đăng ký chưa?
+                const guestRef = doc(db, 'guests', id);
+                const guestSnap = await getDoc(guestRef);
+                if (guestSnap.exists()) {
+                    showDigitalCard(guestSnap.data(), 'guest', guestSnap.id);
+                    showToast("Đã tìm thấy thẻ của bạn!", "success");
+                    return;
+                }
+
+                // BƯỚC 3: Nếu CHƯA ĐĂNG KÝ -> Kiểm tra xem mã có nằm trong danh sách của trường không?
+                const listRef = doc(db, 'studentsList', id);
+                const listSnap = await getDoc(listRef);
+                
+                if (listSnap.exists()) {
+                    foundStudentData = listSnap.data();
+                    document.getElementById('st-info-name').innerText = foundStudentData.name;
+                    document.getElementById('st-info-class').innerText = foundStudentData.class;
+                    document.getElementById('st-info-id').innerText = foundStudentData.studentId;
+                    document.getElementById('st-input-phone').value = '';
+                    document.getElementById('st-input-email').value = '';
+                    showView('view-student-form');
+                    showToast("Mã hợp lệ, vui lòng bổ sung thông tin đăng ký!", "success");
+                } else {
+                    Swal.fire({ 
+                        title: "Không tìm thấy dữ liệu", 
+                        text: "Mã không có trong hệ thống! Nếu bạn là người ngoài trường, vui lòng chọn 'Đăng ký diện người ngoài'.", 
+                        icon: "warning",
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+            } catch (err) {
+                showToast("Lỗi kết nối CSDL: " + err.message);
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        });
+
+        // 4. LƯU ĐĂNG KÝ HỌC SINH -> HIỂN THỊ THẺ
+        document.getElementById('form-register-student').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const phone = document.getElementById('st-input-phone').value.trim();
+            const email = document.getElementById('st-input-email').value.trim();
+            
+            const fullData = {
+                name: foundStudentData.name, 
+                class: foundStudentData.class, 
+                studentId: foundStudentData.studentId, 
+                phone: phone, 
+                email: email, 
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                await setDoc(doc(collection(db, 'students'), foundStudentData.studentId), fullData);
+                showDigitalCard(fullData, 'student');
+                Swal.fire({ 
+                    title: "Đăng ký thành công!", 
+                    text: "Đây là thẻ thư viện điện tử của bạn.", 
+                    icon: "success",
+                    confirmButtonColor: '#3b82f6'
+                });
+            } catch (err) { 
+                showToast("Lỗi khi lưu: Kiểm tra quyền Firebase"); 
+            }
+        });
+
+        // 5. GỬI OTP KHÁCH NGOÀI
+        document.getElementById('form-register-guest').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            guestTempData = { 
+                name: document.getElementById('g-input-name').value, 
+                email: document.getElementById('g-input-email').value, 
+                phone: document.getElementById('g-input-phone').value 
+            };
+            
+            const btnText = document.getElementById('btn-send-otp-text');
+            const btnLoading = document.getElementById('btn-send-otp-loading');
+            const btnSubmit = document.getElementById('btn-send-otp');
+            
+            btnText.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang gửi...';
+            btnLoading.classList.remove('hidden');
+            btnSubmit.disabled = true;
+            
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const timeString = new Date(new Date().getTime() + 15 * 60000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            try {
+                const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        service_id: 'service_arypin9', 
+                        template_id: 'template_g7k2h2r', 
+                        user_id: 'vC9HO0JtM7CI1HAu5', 
+                        template_params: { 
+                            email: guestTempData.email, 
+                            passcode: generatedOtp, 
+                            time: timeString 
+                        } 
+                    })
+                });
+                if (!response.ok) throw new Error("API gửi email thất bại");
+                
+                document.getElementById('display-email').innerText = guestTempData.email;
+                document.getElementById('input-otp').value = '';
+                showToast("Mã OTP đã được gửi đến email!", "success");
+                showView('view-otp');
+            } catch { 
+                Swal.fire({
+                    title: "Lỗi gửi email",
+                    text: "Vui lòng thử lại sau.",
+                    icon: "error",
+                    confirmButtonColor: '#3b82f6'
+                }); 
+            } finally {
+                btnText.innerHTML = '<i class="fas fa-paper-plane mr-3"></i>Gửi mã OTP';
+                btnLoading.classList.add('hidden');
+                btnSubmit.disabled = false;
+            }
+        });
+        
+        // 6. XÁC THỰC OTP & LƯU KHÁCH -> HIỂN THỊ THẺ
+        document.getElementById('form-verify-otp').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(document.getElementById('input-otp').value.trim() !== generatedOtp) return showToast("Mã OTP không chính xác!");
+            
+            try {
+                const guestId = `GUEST${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+                const fullData = {
+                    name: guestTempData.name, 
+                    phone: guestTempData.phone, 
+                    email: guestTempData.email, 
+                    createdAt: new Date().toISOString()
+                };
+
+                await setDoc(doc(collection(db, 'guests'), guestId), fullData);
+                showDigitalCard(fullData, 'guest', guestId);
+                Swal.fire({ 
+                    title: "Đăng ký thành công!", 
+                    text: `Mã thẻ của bạn là ${guestId}. Vui lòng lưu lại thẻ này!`, 
+                    icon: "success",
+                    confirmButtonColor: '#3b82f6'
+                });
+            } catch (err) { 
+                showToast("Lỗi khi đăng ký khách"); 
+            }
+        });
+
+        // HÀM ĐIỀU HƯỚNG CHUNG
+        document.getElementById('nav-home').addEventListener('click', () => {
+            document.getElementById('input-student-id').value = '';
+            showView('view-home');
+        });
+        document.getElementById('btn-to-guest').addEventListener('click', () => showView('view-guest-form'));
+        document.getElementById('btn-back-to-guest').addEventListener('click', () => showView('view-guest-form'));
+        document.querySelectorAll('.btn-back').forEach(b => b.addEventListener('click', () => {
+            document.getElementById('input-student-id').value = '';
+            showView('view-home');
+        }));
+
+        // BẮT ĐẦU CHẠY APP
+        initApp();
+
+    </script>
+</body>
+</html>
+
