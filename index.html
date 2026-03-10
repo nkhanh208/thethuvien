@@ -588,16 +588,14 @@
         function showToast(text, type = 'error') {
             const container = document.getElementById('toast-container');
             const message = document.getElementById('toast-message');
-            const toastText = document.getElementById('toast-text');
             
-            toastText.innerText = text;
-            
+            // Đưa luôn biến text và id="toast-text" vào trong innerHTML để không bị mất element ở các lần gọi sau
             if (type === 'error') {
                 message.className = 'glass shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-red-100';
-                message.innerHTML = `<div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-circle text-red-500"></i></div><span class="text-sm font-medium text-red-700">${text}</span>`;
+                message.innerHTML = `<div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-circle text-red-500"></i></div><span id="toast-text" class="text-sm font-medium text-red-700">${text}</span>`;
             } else {
                 message.className = 'glass shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-green-100';
-                message.innerHTML = `<div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-check-circle text-green-500"></i></div><span class="text-sm font-medium text-green-700">${text}</span>`;
+                message.innerHTML = `<div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-check-circle text-green-500"></i></div><span id="toast-text" class="text-sm font-medium text-green-700">${text}</span>`;
             }
             
             container.classList.remove('opacity-0', 'pointer-events-none');
@@ -607,7 +605,8 @@
                 container.classList.add('opacity-0', 'pointer-events-none');
                 container.classList.remove('toast-enter');
             }, 3000);
-        }
+}
+        
 
         // Hàm đổ dữ liệu lên Thẻ Thư Viện
         function showDigitalCard(data, type, guestId = null) {
@@ -803,9 +802,10 @@
                     icon: "success",
                     confirmButtonColor: '#3b82f6'
                 });
-            } catch (err) { 
-                showToast("Lỗi khi đăng ký khách"); 
-            }
+        } catch (err) { 
+            showToast("Lỗi khi đăng ký khách: " + err.message); 
+            console.error("Chi tiết lỗi Firebase:", err); // In lỗi ra console để xem
+        }
         });
 
         // HÀM ĐIỀU HƯỚNG CHUNG
