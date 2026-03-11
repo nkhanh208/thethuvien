@@ -395,6 +395,10 @@
                             <i class="fas fa-envelope absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
                             <input type="email" id="st-input-email" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="email@example.com">
                         </div>
+                        <!-- Thêm cảnh báo email cố định -->
+                        <p class="text-xs text-amber-600 mt-2 font-medium">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Email sẽ được gắn cố định với thẻ. Để thay đổi sau này, vui lòng liên hệ thủ thư.
+                        </p>
                     </div>
                     <button type="submit" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl mt-6 shadow-lg text-lg">
                         <i class="fas fa-id-card mr-3"></i>
@@ -548,7 +552,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        // CẬP NHẬT: Thêm query và where vào import
+        import { getFirestore, collection, getDocs, setDoc, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         // CẤU HÌNH FIREBASE
         const firebaseConfig = {
@@ -605,7 +610,7 @@
                 container.classList.add('opacity-0', 'pointer-events-none');
                 container.classList.remove('toast-enter');
             }, 3000);
-}
+        }
         
 
         // Hàm đổ dữ liệu lên Thẻ Thư Viện
@@ -696,32 +701,55 @@
         });
 
         // 4. LƯU ĐĂNG KÝ HỌC SINH -> HIỂN THỊ THẺ
+        // CẬP NHẬT: Thêm kiểm tra trùng lặp email
         document.getElementById('form-register-student').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentUser) return;
+            
             const phone = document.getElementById('st-input-phone').value.trim();
             const email = document.getElementById('st-input-email').value.trim();
             
-            const fullData = {
-                name: foundStudentData.name, 
-                class: foundStudentData.class, 
-                studentId: foundStudentData.studentId, 
-                phone: phone, 
-                email: email, 
-                createdAt: new Date().toISOString()
-            };
+            // Hiệu ứng loading cho nút bấm
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalBtnHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang kiểm tra...';
+            btn.disabled = true;
 
             try {
+                // KIỂM TRA XEM EMAIL ĐÃ ĐƯỢC GẮN CHO MÃ HỌC SINH NÀO KHÁC CHƯA
+                const emailQuery = query(collection(db, 'students'), where('email', '==', email));
+                const querySnapshot = await getDocs(emailQuery);
+                
+                if (!querySnapshot.empty) {
+                    showToast("Email này đã được đăng ký cho một thẻ thư viện khác!");
+                    btn.innerHTML = originalBtnHTML;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // NẾU EMAIL HỢP LỆ THÌ TIẾN HÀNH LƯU
+                const fullData = {
+                    name: foundStudentData.name, 
+                    class: foundStudentData.class, 
+                    studentId: foundStudentData.studentId, 
+                    phone: phone, 
+                    email: email, 
+                    createdAt: new Date().toISOString()
+                };
+
                 await setDoc(doc(collection(db, 'students'), foundStudentData.studentId), fullData);
                 showDigitalCard(fullData, 'student');
                 Swal.fire({ 
                     title: "Đăng ký thành công!", 
-                    text: "Đây là thẻ thư viện điện tử của bạn.", 
+                    text: "Email đã được gắn cố định với thẻ này. Vui lòng lưu lại thẻ thư viện điện tử của bạn.", 
                     icon: "success",
                     confirmButtonColor: '#3b82f6'
                 });
             } catch (err) { 
-                showToast("Lỗi khi lưu: Kiểm tra quyền Firebase"); 
+                showToast("Lỗi khi lưu: " + err.message); 
+            } finally {
+                btn.innerHTML = originalBtnHTML;
+                btn.disabled = false;
             }
         });
 
@@ -826,4 +854,3 @@
     </script>
 </body>
 </html>
-
