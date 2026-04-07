@@ -29,34 +29,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-            50% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
         @keyframes spin { 
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
 
-        @keyframes bounce-soft {
+        @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-8px); }
         }
 
         /* === GLASSMORPHISM === */
@@ -66,18 +46,6 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-
-        .glass-dark {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        /* === CUSTOM SCROLLBAR === */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* === LOADER === */
         .loader {
@@ -104,7 +72,7 @@
             width: 20px;
             height: 20px;
             border: 2px solid #e2e8f0;
-            border-top: 2px solid #3b82f6;
+            border-top: 2px solid #ffffff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -116,25 +84,9 @@
             position: relative;
             overflow: hidden;
         }
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
-        }
-        .btn-primary:hover::before {
-            width: 300px;
-            height: 300px;
         }
 
         .btn-secondary {
@@ -142,17 +94,22 @@
             border: 2px solid #e2e8f0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .btn-secondary:hover {
+        .btn-secondary:hover:not(:disabled) {
             background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
             border-color: #cbd5e1;
             transform: translateY(-2px);
             box-shadow: 0 8px 20px -4px rgba(100, 116, 139, 0.2);
         }
+        
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
 
         /* === INPUT EFFECTS === */
-        .input-focus {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .input-focus { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .input-focus:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.15);
@@ -160,9 +117,7 @@
         }
 
         /* === CARD EFFECTS === */
-        .card-hover {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .card-hover:hover {
             transform: translateY(-6px);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
@@ -175,67 +130,27 @@
             overflow: hidden;
         }
         .digital-card::before {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
+            content: ''; position: absolute; width: 200px; height: 200px;
             background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-            top: -100px;
-            right: -100px;
-            animation: float 6s ease-in-out infinite;
+            top: -100px; right: -100px; animation: float 6s ease-in-out infinite;
         }
         .digital-card::after {
-            content: '';
-            position: absolute;
-            width: 150px;
-            height: 150px;
+            content: ''; position: absolute; width: 150px; height: 150px;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            bottom: -50px;
-            left: -50px;
-            animation: float 8s ease-in-out infinite reverse;
-        }
-
-        /* === ICONS === */
-        .icon-pulse {
-            animation: bounce-soft 2s ease-in-out infinite;
+            bottom: -50px; left: -50px; animation: float 8s ease-in-out infinite reverse;
         }
 
         /* === TOAST ANIMATION === */
-        .toast-enter {
-            animation: slideDown 0.4s ease-out forwards;
-        }
-        .toast-exit {
-            animation: slideUp 0.3s ease-in forwards;
-        }
+        .toast-enter { animation: slideDown 0.4s ease-out forwards; }
         @keyframes slideDown {
             from { opacity: 0; transform: translate(-50%, -20px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
-        @keyframes slideUp {
-            from { opacity: 1; transform: translate(-50%, 0); }
-            to { opacity: 0; transform: translate(-50%, -20px); }
-        }
 
-        /* === SKELETON LOADING === */
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-
-        /* === DOT PATTERN BACKGROUND === */
-        .dot-pattern {
-            background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
-        /* === SUBTLE GRADIENT BACKGROUND === */
-        .bg-subtle-gradient {
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
-        }
+        .dot-pattern { background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px); background-size: 24px 24px; }
     </style>
 </head>
-<body class="bg-white font-sans text-slate-800 min-h-screen dot-pattern">
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen dot-pattern">
 
     <!-- GLASS NAVBAR -->
     <nav id="navbar" class="glass shadow-sm sticky top-0 z-50 border-b border-slate-100/50">
@@ -274,11 +189,6 @@
                 <p class="text-slate-700 font-semibold text-lg mb-1">Đang kết nối hệ thống</p>
                 <p class="text-slate-400 text-sm">Vui lòng chờ trong giây lát...</p>
             </div>
-            <div class="mt-8 flex gap-2">
-                <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
-                <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
-                <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
-            </div>
         </div>
 
         <!-- 2. FIREBASE ERROR SCREEN -->
@@ -292,19 +202,12 @@
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-3 text-center">Lỗi kết nối Firebase</h2>
                 <p id="error-text" class="text-red-500 font-medium mb-4 text-center">Chưa bật tính năng Đăng nhập ẩn danh.</p>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                        Vui lòng vào Firebase Console > Authentication > Sign-in method > Bật Anonymous.
-                    </p>
-                </div>
             </div>
         </div>
 
         <!-- 3. HOME SCREEN -->
         <div id="view-home" class="view-section">
             <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover">
-                <!-- Decorative element -->
                 <div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -z-10"></div>
                 
                 <div class="text-center mb-8">
@@ -360,7 +263,6 @@
                     Hồ sơ Học sinh
                 </h2>
                 
-                <!-- Student Info Card -->
                 <div class="bg-gradient-to-br from-blue-50 to-white p-6 rounded-2xl border border-blue-100 mb-6 relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-full -mr-10 -mt-10 opacity-50"></div>
                     <div class="relative z-10">
@@ -395,10 +297,6 @@
                             <i class="fas fa-envelope absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
                             <input type="email" id="st-input-email" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="email@example.com">
                         </div>
-                        <!-- Thêm cảnh báo email cố định -->
-                        <p class="text-xs text-amber-600 mt-2 font-medium">
-                            <i class="fas fa-exclamation-triangle mr-1"></i> Email sẽ được gắn cố định với thẻ. Để thay đổi sau này, vui lòng liên hệ thủ thư.
-                        </p>
                     </div>
                     <button type="submit" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl mt-6 shadow-lg text-lg">
                         <i class="fas fa-id-card mr-3"></i>
@@ -408,7 +306,7 @@
             </div>
         </div>
 
-        <!-- 5. GUEST REGISTRATION FORM -->
+        <!-- 5. GUEST REGISTRATION FORM (XÁC THỰC 2 BƯỚC BẮT BUỘC) -->
         <div id="view-guest-form" class="view-section">
             <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover">
                 <button type="button" class="btn-back flex items-center text-slate-500 hover:text-blue-600 mb-6 text-sm font-semibold transition-colors group">
@@ -422,7 +320,7 @@
                     Khách ngoài trường
                 </h2>
 
-                <form id="form-register-guest" class="space-y-5">
+                <form id="form-register-guest" class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Họ và tên <span class="text-red-500">*</span></label>
                         <input type="text" id="g-input-name" required class="input-focus w-full px-5 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập họ và tên">
@@ -431,7 +329,7 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <i class="fas fa-phone absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
-                            <input type="tel" id="g-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại">
+                            <input type="tel" id="g-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại thật">
                         </div>
                     </div>
                     <div>
@@ -442,49 +340,55 @@
                         </div>
                     </div>
 
-                    <div class="bg-gradient-to-r from-blue-50 to-green-50 p-5 rounded-2xl border border-blue-100 flex items-start gap-4">
-                        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                            <i class="fas fa-shield-alt text-blue-600"></i>
+                    <!-- Hộp thông báo bảo mật 2 lớp -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100 flex items-start gap-4 mt-6">
+                        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-blue-100">
+                            <i class="fas fa-shield-check text-blue-600 text-lg"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-slate-700 font-medium mb-1">Xác thực bảo mật</p>
-                            <p class="text-xs text-slate-500 leading-relaxed">
-                                Hệ thống sẽ gửi một mã OTP xác thực đến email của bạn để hoàn tất việc đăng ký thẻ.
+                            <p class="text-sm text-slate-800 font-bold mb-1">Bảo mật 2 Lớp (2-Step)</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Để chống giả mạo, hệ thống sẽ yêu cầu xác thực <strong>Số điện thoại (SMS)</strong> trước, sau đó mới xác thực <strong>Email</strong> để hoàn tất cấp thẻ.
                             </p>
                         </div>
                     </div>
 
-                    <button type="submit" id="btn-send-otp" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl mt-6 shadow-lg flex justify-center items-center text-lg">
-                        <span id="btn-send-otp-text"><i class="fas fa-paper-plane mr-3"></i>Gửi mã OTP</span>
-                        <div id="btn-send-otp-loading" class="hidden ml-3 loader-sm"></div>
+                    <button type="submit" id="btn-start-verify" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl mt-6 shadow-lg flex justify-center items-center text-lg">
+                        <span id="text-start-verify"><i class="fas fa-arrow-right mr-3"></i>Bắt đầu Xác thực</span>
+                        <div id="load-start-verify" class="hidden ml-3 loader-sm"></div>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- 6. OTP VERIFICATION SCREEN -->
+        <!-- 6. OTP VERIFICATION SCREEN (ĐỘNG: BƯỚC 1 SMS -> BƯỚC 2 EMAIL) -->
         <div id="view-otp" class="view-section">
             <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-100/50 card-hover text-center">
                 <button type="button" id="btn-back-to-guest" class="flex items-center text-slate-500 hover:text-blue-600 mb-6 text-sm font-semibold transition-colors group ml-0">
                     <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i> Đổi thông tin
                 </button>
                 
-                <div class="relative inline-block mb-6">
+                <!-- Huy hiệu chỉ báo Bước (Step Badge) -->
+                <div id="otp-step-badge" class="mb-5 inline-block bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider border border-blue-100">
+                    BƯỚC 1/2: XÁC THỰC SĐT
+                </div>
+
+                <div class="relative inline-block mb-5">
                     <div class="w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-green-500/20">
-                        <i class="fas fa-envelope-open-text text-3xl text-green-600"></i>
+                        <i id="otp-icon" class="fas fa-sms text-3xl text-green-600"></i>
                     </div>
                     <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-3 border-white flex items-center justify-center">
                         <i class="fas fa-check text-white text-xs"></i>
                     </div>
                 </div>
-                <h2 class="text-2xl font-bold mb-2 text-slate-800">Xác thực Email</h2>
-                <p class="text-slate-500 text-sm mb-8">Mã bảo mật đã được gửi đến <strong id="display-email" class="text-blue-600"></strong></p>
+                
+                <h2 id="otp-title" class="text-2xl font-bold mb-2 text-slate-800">Mã xác thực SMS</h2>
+                <p class="text-slate-500 text-sm mb-8">Mã bảo mật đã được gửi đến <strong id="display-target" class="text-blue-600 tracking-wider"></strong></p>
 
                 <form id="form-verify-otp">
                     <input type="text" id="input-otp" maxlength="6" required class="input-focus w-full text-center tracking-[0.5em] text-3xl font-mono font-bold px-6 py-5 border-2 border-slate-200 rounded-2xl focus:outline-none mb-8 shadow-inner bg-slate-50" placeholder="------">
-                    <button type="submit" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl shadow-lg text-lg">
-                        <i class="fas fa-check-circle mr-3"></i>
-                        Xác thực & Tạo Thẻ
+                    <button type="submit" id="btn-submit-otp" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl shadow-lg text-lg flex justify-center items-center">
+                        <span id="text-submit-otp"><i class="fas fa-check-circle mr-3"></i>Xác nhận mã</span>
                     </button>
                 </form>
             </div>
@@ -493,7 +397,6 @@
         <!-- 7. DIGITAL CARD -->
         <div id="view-digital-card" class="view-section">
             <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-100/50 text-center max-w-sm mx-auto">
-                <!-- Success Header -->
                 <div class="mb-6">
                     <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-400 to-green-500 rounded-2xl mb-4 shadow-lg shadow-green-500/30">
                         <i class="fas fa-check text-white text-2xl"></i>
@@ -502,9 +405,7 @@
                     <p class="text-sm text-slate-500 mt-1">Xuất trình thẻ này khi mượn/trả sách</p>
                 </div>
 
-                <!-- Digital Card Design -->
                 <div class="digital-card rounded-2xl shadow-2xl p-6 text-white relative overflow-hidden mb-8 text-left">
-                    <!-- Decorative circles -->
                     <div class="absolute -right-16 -top-16 w-40 h-40 bg-white opacity-10 rounded-full"></div>
                     <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-white opacity-10 rounded-full"></div>
 
@@ -535,7 +436,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="space-y-3">
                     <button type="button" class="btn-primary w-full text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex justify-center items-center">
                         <i class="fas fa-download mr-2"></i> Lưu thẻ
@@ -552,10 +452,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        // CẬP NHẬT: Thêm query và where vào import
         import { getFirestore, collection, getDocs, setDoc, doc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // CẤU HÌNH FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCgpPUYV5lqZ_5zUua8Q_ThNEIkPsEg2do",
             authDomain: "thuvien-44050.firebaseapp.com",
@@ -572,10 +470,13 @@
 
         let currentUser = null;
         let foundStudentData = null;
-        let generatedOtp = '';
         let guestTempData = {};
+        
+        // CÁC BIẾN LƯU TRẠNG THÁI OTP
+        let currentOtpStep = ''; // 'sms' hoặc 'email'
+        let smsOtpCode = '';
+        let emailOtpCode = '';
 
-        // 1. QUẢN LÝ GIAO DIỆN CHÍNH
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
@@ -585,7 +486,6 @@
             });
             const activeView = document.getElementById(viewId);
             activeView.style.display = 'block';
-            // Trigger reflow
             activeView.offsetHeight;
             activeView.classList.add('active');
         }
@@ -594,7 +494,6 @@
             const container = document.getElementById('toast-container');
             const message = document.getElementById('toast-message');
             
-            // Đưa luôn biến text và id="toast-text" vào trong innerHTML để không bị mất element ở các lần gọi sau
             if (type === 'error') {
                 message.className = 'glass shadow-lg rounded-2xl p-4 flex items-center gap-3 border border-red-100';
                 message.innerHTML = `<div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-circle text-red-500"></i></div><span id="toast-text" class="text-sm font-medium text-red-700">${text}</span>`;
@@ -611,9 +510,7 @@
                 container.classList.remove('toast-enter');
             }, 3000);
         }
-        
 
-        // Hàm đổ dữ liệu lên Thẻ Thư Viện
         function showDigitalCard(data, type, guestId = null) {
             document.getElementById('card-name').innerText = data.name;
             document.getElementById('card-role').innerText = type === 'student' ? `Học sinh - Lớp ${data.class}` : 'Khách ngoài trường';
@@ -624,7 +521,6 @@
             showView('view-digital-card');
         }
 
-        // 2. KHỞI TẠO APP
         async function initApp() {
             try {
                 await signInAnonymously(auth);
@@ -641,7 +537,7 @@
             });
         }
 
-        // 3. LOGIC KIỂM TRA & TRUY XUẤT THẺ THÔNG MINH
+        // --- CHECK MÃ HỌC SINH ---
         document.getElementById('form-check-student').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('input-student-id').value.trim();
@@ -653,7 +549,6 @@
             btn.disabled = true;
             
             try {
-                // BƯỚC 1: Kiểm tra xem đã ĐĂNG KÝ HỌC SINH chưa?
                 const studentRef = doc(db, 'students', id);
                 const studentSnap = await getDoc(studentRef);
                 if (studentSnap.exists()) {
@@ -662,7 +557,6 @@
                     return;
                 }
 
-                // BƯỚC 2: Kiểm tra xem có phải là KHÁCH đã đăng ký chưa?
                 const guestRef = doc(db, 'guests', id);
                 const guestSnap = await getDoc(guestRef);
                 if (guestSnap.exists()) {
@@ -671,7 +565,6 @@
                     return;
                 }
 
-                // BƯỚC 3: Nếu CHƯA ĐĂNG KÝ -> Kiểm tra xem mã có nằm trong danh sách của trường không?
                 const listRef = doc(db, 'studentsList', id);
                 const listSnap = await getDoc(listRef);
                 
@@ -700,8 +593,7 @@
             }
         });
 
-        // 4. LƯU ĐĂNG KÝ HỌC SINH -> HIỂN THỊ THẺ
-        // CẬP NHẬT: Thêm kiểm tra trùng lặp email
+        // --- ĐĂNG KÝ HỌC SINH ---
         document.getElementById('form-register-student').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentUser) return;
@@ -709,14 +601,12 @@
             const phone = document.getElementById('st-input-phone').value.trim();
             const email = document.getElementById('st-input-email').value.trim();
             
-            // Hiệu ứng loading cho nút bấm
             const btn = e.target.querySelector('button[type="submit"]');
             const originalBtnHTML = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang kiểm tra...';
             btn.disabled = true;
 
             try {
-                // KIỂM TRA XEM EMAIL ĐÃ ĐƯỢC GẮN CHO MÃ HỌC SINH NÀO KHÁC CHƯA
                 const emailQuery = query(collection(db, 'students'), where('email', '==', email));
                 const querySnapshot = await getDocs(emailQuery);
                 
@@ -727,7 +617,6 @@
                     return;
                 }
 
-                // NẾU EMAIL HỢP LỆ THÌ TIẾN HÀNH LƯU
                 const fullData = {
                     name: foundStudentData.name, 
                     class: foundStudentData.class, 
@@ -739,12 +628,7 @@
 
                 await setDoc(doc(collection(db, 'students'), foundStudentData.studentId), fullData);
                 showDigitalCard(fullData, 'student');
-                Swal.fire({ 
-                    title: "Đăng ký thành công!", 
-                    text: "Email đã được gắn cố định với thẻ này. Vui lòng lưu lại thẻ thư viện điện tử của bạn.", 
-                    icon: "success",
-                    confirmButtonColor: '#3b82f6'
-                });
+                Swal.fire({ title: "Đăng ký thành công!", text: "Email đã được gắn cố định với thẻ này.", icon: "success", confirmButtonColor: '#3b82f6' });
             } catch (err) { 
                 showToast("Lỗi khi lưu: " + err.message); 
             } finally {
@@ -753,102 +637,190 @@
             }
         });
 
-        // 5. GỬI OTP KHÁCH NGOÀI
+        // ==========================================
+        // QUY TRÌNH XÁC THỰC 2 BƯỚC KHÁCH NGOÀI
+        // ==========================================
+
+        // BƯỚC 1: SUBMIT FORM THÔNG TIN -> KIỂM TRA DATABASE -> GỬI SMS
         document.getElementById('form-register-guest').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             guestTempData = { 
-                name: document.getElementById('g-input-name').value, 
-                email: document.getElementById('g-input-email').value, 
-                phone: document.getElementById('g-input-phone').value 
+                name: document.getElementById('g-input-name').value.trim(), 
+                email: document.getElementById('g-input-email').value.trim(), 
+                phone: document.getElementById('g-input-phone').value.trim() 
             };
-            
-            const btnText = document.getElementById('btn-send-otp-text');
-            const btnLoading = document.getElementById('btn-send-otp-loading');
-            const btnSubmit = document.getElementById('btn-send-otp');
-            
-            btnText.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang gửi...';
-            btnLoading.classList.remove('hidden');
+
+            const btnText = document.getElementById('text-start-verify');
+            const btnLoad = document.getElementById('load-start-verify');
+            const btnSubmit = document.getElementById('btn-start-verify');
+
+            btnText.style.display = 'none';
+            btnLoad.classList.remove('hidden');
             btnSubmit.disabled = true;
-            
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            const timeString = new Date(new Date().getTime() + 15 * 60000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            
+
             try {
-                const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        service_id: 'service_arypin9', 
-                        template_id: 'template_g7k2h2r', 
-                        user_id: 'vC9HO0JtM7CI1HAu5', 
-                        template_params: { 
-                            email: guestTempData.email, 
-                            passcode: generatedOtp, 
-                            time: timeString 
-                        } 
-                    })
-                });
-                if (!response.ok) throw new Error("API gửi email thất bại");
+                // Kiểm tra xem Email đã tồn tại chưa
+                const emailQuery = query(collection(db, 'guests'), where('email', '==', guestTempData.email));
+                const emailSnap = await getDocs(emailQuery);
+                if (!emailSnap.empty) {
+                    Swal.fire({ title: "Email đã tồn tại", text: "Email này đã được dùng để đăng ký thẻ khách trước đây. Vui lòng sử dụng email khác.", icon: "warning", confirmButtonColor: '#3b82f6' });
+                    return;
+                }
+
+                // Kiểm tra xem Số điện thoại đã tồn tại chưa
+                const phoneQuery = query(collection(db, 'guests'), where('phone', '==', guestTempData.phone));
+                const phoneSnap = await getDocs(phoneQuery);
+                if (!phoneSnap.empty) {
+                    Swal.fire({ title: "SĐT đã tồn tại", text: "Số điện thoại này đã được gắn với một thẻ khác.", icon: "warning", confirmButtonColor: '#3b82f6' });
+                    return;
+                }
+
+                // TẠO MÃ SMS OTP
+                smsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
                 
-                document.getElementById('display-email').innerText = guestTempData.email;
+                // GIẢI PHÁP MỚI: BẮN THẲNG LỆNH ĐẾN MACRODROID (Vượt qua Google Script)
+                const macroId = "a9b42a0f-ffd0-4578-9fd7-d5fd6be9d80d";
+                const macroUrl = `https://trigger.macrodroid.com/${macroId}/send_otp?phone=${encodeURIComponent(guestTempData.phone)}&otp=${smsOtpCode}&t=${new Date().getTime()}`;
+                
+                // Gọi điện thoại gửi SMS ngay lập tức
+                fetch(macroUrl, { 
+                    method: 'GET', 
+                    mode: 'no-cors', 
+                    cache: 'no-store' 
+                })
+                .then(() => console.log("Đã bắn lệnh SMS thẳng tới điện thoại!"))
+                .catch(e => console.error('Lỗi gửi SMS tới MacroDroid:', e));
+
+                // (Tùy chọn) Vẫn gọi Google Script để lưu vào file Sheet lịch sử
+                const gasUrl = "https://script.google.com/macros/s/AKfycbxGTEalH-yos3juQ6jKdVWC6gus5cDqry8VoeoM3EIO2jX8NNjyBbo6_HdUthaf0s-hQg/exec";
+                const gasReqUrl = `${gasUrl}?phone=${encodeURIComponent(guestTempData.phone)}&otp=${smsOtpCode}&t=${new Date().getTime()}`;
+                
+                fetch(gasReqUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
+                .catch(e => console.log('Không lưu được lịch sử:', e));
+
+                // CẤU HÌNH GIAO DIỆN OTP CHO BƯỚC 1 (SMS)
+                currentOtpStep = 'sms';
+                document.getElementById('otp-step-badge').innerText = 'BƯỚC 1/2: XÁC THỰC SĐT';
+                document.getElementById('otp-step-badge').className = 'mb-5 inline-block bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider border border-blue-100';
+                document.getElementById('otp-icon').className = 'fas fa-sms text-3xl text-blue-600';
+                document.getElementById('otp-title').innerText = 'Mã xác thực SMS';
+                document.getElementById('display-target').innerText = guestTempData.phone;
                 document.getElementById('input-otp').value = '';
-                showToast("Mã OTP đã được gửi đến email!", "success");
+                
+                showToast("Mã OTP đang được gửi đến SĐT của bạn!", "success");
                 showView('view-otp');
-            } catch { 
-                Swal.fire({
-                    title: "Lỗi gửi email",
-                    text: "Vui lòng thử lại sau.",
-                    icon: "error",
-                    confirmButtonColor: '#3b82f6'
-                }); 
+
+            } catch (err) {
+                console.error("Lỗi:", err);
+                Swal.fire({ title: "Lỗi kết nối", text: "Vui lòng kiểm tra lại kết nối mạng.", icon: "error", confirmButtonColor: '#3b82f6' });
             } finally {
-                btnText.innerHTML = '<i class="fas fa-paper-plane mr-3"></i>Gửi mã OTP';
-                btnLoading.classList.add('hidden');
+                btnText.style.display = 'flex';
+                btnLoad.classList.add('hidden');
                 btnSubmit.disabled = false;
             }
         });
-        
-        // 6. XÁC THỰC OTP & LƯU KHÁCH -> HIỂN THỊ THẺ
+
+        // BƯỚC 2 & 3: XỬ LÝ NHẬP MÃ OTP
         document.getElementById('form-verify-otp').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(document.getElementById('input-otp').value.trim() !== generatedOtp) return showToast("Mã OTP không chính xác!");
-            
-            try {
-                const guestId = `GUEST${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-                const fullData = {
-                    name: guestTempData.name, 
-                    phone: guestTempData.phone, 
-                    email: guestTempData.email, 
-                    createdAt: new Date().toISOString()
-                };
+            const inputVal = document.getElementById('input-otp').value.trim();
+            const btnOtpSubmit = document.getElementById('btn-submit-otp');
+            const originalOtpText = document.getElementById('text-submit-otp').innerHTML;
 
-                await setDoc(doc(collection(db, 'guests'), guestId), fullData);
-                showDigitalCard(fullData, 'guest', guestId);
-                Swal.fire({ 
-                    title: "Đăng ký thành công!", 
-                    text: `Mã thẻ của bạn là ${guestId}. Vui lòng lưu lại thẻ này!`, 
-                    icon: "success",
-                    confirmButtonColor: '#3b82f6'
-                });
-        } catch (err) { 
-            showToast("Lỗi khi đăng ký khách: " + err.message); 
-            console.error("Chi tiết lỗi Firebase:", err); // In lỗi ra console để xem
-        }
+            // XỬ LÝ NẾU ĐANG Ở BƯỚC 1 (SMS)
+            if (currentOtpStep === 'sms') {
+                if (inputVal !== smsOtpCode) return showToast("Mã OTP SMS không chính xác!");
+                
+                // Mã SMS đúng -> Chuẩn bị gửi tiếp mã Email
+                btnOtpSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang chuẩn bị Bước 2...';
+                btnOtpSubmit.disabled = true;
+
+                try {
+                    emailOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+                    const timeString = new Date(new Date().getTime() + 15 * 60000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            service_id: 'service_arypin9', 
+                            template_id: 'template_g7k2h2r', 
+                            user_id: 'vC9HO0JtM7CI1HAu5', 
+                            template_params: { email: guestTempData.email, passcode: emailOtpCode, time: timeString } 
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error("API Email thất bại");
+
+                    // CẤU HÌNH GIAO DIỆN OTP CHO BƯỚC 2 (EMAIL)
+                    currentOtpStep = 'email';
+                    document.getElementById('otp-step-badge').innerText = 'BƯỚC 2/2: XÁC THỰC EMAIL';
+                    document.getElementById('otp-step-badge').className = 'mb-5 inline-block bg-orange-50 text-orange-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider border border-orange-100';
+                    document.getElementById('otp-icon').className = 'fas fa-envelope-open-text text-3xl text-orange-500';
+                    document.getElementById('otp-title').innerText = 'Mã xác thực Email';
+                    document.getElementById('display-target').innerText = guestTempData.email;
+                    document.getElementById('display-target').className = 'text-orange-600 tracking-wider';
+                    document.getElementById('input-otp').value = '';
+                    
+                    Swal.fire({ title: "SĐT đã được xác thực!", text: "Tuyệt vời. Hệ thống vừa gửi mã xác thực thứ 2 đến Email của bạn để hoàn tất.", icon: "success", confirmButtonColor: '#3b82f6' });
+
+                } catch (err) {
+                    Swal.fire({ title: "Lỗi gửi Email", text: "Không thể gửi mã Email lúc này.", icon: "error", confirmButtonColor: '#3b82f6' });
+                } finally {
+                    btnOtpSubmit.innerHTML = `<span id="text-submit-otp">${originalOtpText}</span>`;
+                    btnOtpSubmit.disabled = false;
+                }
+            } 
+            // XỬ LÝ NẾU ĐANG Ở BƯỚC 2 (EMAIL)
+            else if (currentOtpStep === 'email') {
+                if (inputVal !== emailOtpCode) return showToast("Mã OTP Email không chính xác!");
+                
+                // MÃ EMAIL ĐÚNG -> LƯU VÀO DATABASE VÀ CẤP THẺ
+                btnOtpSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Đang tạo thẻ...';
+                btnOtpSubmit.disabled = true;
+
+                try {
+                    const guestId = `GUEST${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+                    const fullData = {
+                        name: guestTempData.name, 
+                        phone: guestTempData.phone, 
+                        email: guestTempData.email, 
+                        createdAt: new Date().toISOString()
+                    };
+
+                    await setDoc(doc(collection(db, 'guests'), guestId), fullData);
+                    showDigitalCard(fullData, 'guest', guestId);
+                    Swal.fire({ title: "Đăng ký thành công!", text: `Mã thẻ của bạn là ${guestId}. Vui lòng lưu lại thẻ này!`, icon: "success", confirmButtonColor: '#3b82f6' });
+                } catch (err) { 
+                    showToast("Lỗi khi đăng ký khách: " + err.message); 
+                } finally {
+                    btnOtpSubmit.innerHTML = `<span id="text-submit-otp">${originalOtpText}</span>`;
+                    btnOtpSubmit.disabled = false;
+                }
+            }
         });
 
         // HÀM ĐIỀU HƯỚNG CHUNG
         document.getElementById('nav-home').addEventListener('click', () => {
+            currentOtpStep = ''; // Reset trạng thái
             document.getElementById('input-student-id').value = '';
             showView('view-home');
         });
         document.getElementById('btn-to-guest').addEventListener('click', () => showView('view-guest-form'));
-        document.getElementById('btn-back-to-guest').addEventListener('click', () => showView('view-guest-form'));
+        
+        // NÚT ĐỔI THÔNG TIN (QUAY LẠI TỪ MÀN HÌNH OTP)
+        document.getElementById('btn-back-to-guest').addEventListener('click', () => {
+            currentOtpStep = ''; // Reset trạng thái
+            showView('view-guest-form');
+        });
+
         document.querySelectorAll('.btn-back').forEach(b => b.addEventListener('click', () => {
+            currentOtpStep = ''; // Reset trạng thái
             document.getElementById('input-student-id').value = '';
             showView('view-home');
         }));
 
-        // BẮT ĐẦU CHẠY APP
         initApp();
 
     </script>
