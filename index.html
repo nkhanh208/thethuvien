@@ -288,7 +288,7 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <i class="fas fa-phone absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
-                            <input type="tel" id="st-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại">
+                            <input type="tel" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="st-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại">
                         </div>
                     </div>
                     <div>
@@ -329,7 +329,7 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <i class="fas fa-phone absolute top-1/2 left-4 text-slate-400 -translate-y-1/2"></i>
-                            <input type="tel" id="g-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại thật">
+                            <input type="tel" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="g-input-phone" required class="input-focus pl-12 w-full px-4 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none shadow-sm" placeholder="Nhập số điện thoại thật">
                         </div>
                     </div>
                     <div>
@@ -383,10 +383,17 @@
                 </div>
                 
                 <h2 id="otp-title" class="text-2xl font-bold mb-2 text-slate-800">Mã xác thực SMS</h2>
-                <p class="text-slate-500 text-sm mb-8">Mã bảo mật đã được gửi đến <strong id="display-target" class="text-blue-600 tracking-wider"></strong></p>
+                <p class="text-slate-500 text-sm mb-6">Mã bảo mật đã được gửi đến <strong id="display-target" class="text-blue-600 tracking-wider"></strong></p>
 
                 <form id="form-verify-otp">
-                    <input type="text" id="input-otp" maxlength="6" required class="input-focus w-full text-center tracking-[0.5em] text-3xl font-mono font-bold px-6 py-5 border-2 border-slate-200 rounded-2xl focus:outline-none mb-8 shadow-inner bg-slate-50" placeholder="------">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" id="input-otp" maxlength="6" required class="input-focus w-full text-center tracking-[0.5em] text-3xl font-mono font-bold px-6 py-5 border-2 border-slate-200 rounded-2xl focus:outline-none mb-4 shadow-inner bg-slate-50" placeholder="------">
+                    
+                    <!-- Khung đếm ngược & Gửi lại mã -->
+                    <div class="flex justify-between items-center mb-8 px-2">
+                        <span id="otp-timer" class="text-sm font-semibold text-slate-600"><i class="far fa-clock mr-1"></i> Hiệu lực: 05:00</span>
+                        <button type="button" id="btn-resend-otp" class="text-blue-600 font-bold text-sm hover:underline disabled:text-slate-400 disabled:no-underline transition-colors" disabled>Gửi lại mã (60s)</button>
+                    </div>
+
                     <button type="submit" id="btn-submit-otp" class="btn-primary w-full text-white font-semibold py-4 px-6 rounded-2xl shadow-lg text-lg flex justify-center items-center">
                         <span id="text-submit-otp"><i class="fas fa-check-circle mr-3"></i>Xác nhận mã</span>
                     </button>
@@ -440,7 +447,8 @@
                     <button type="button" class="btn-primary w-full text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex justify-center items-center">
                         <i class="fas fa-download mr-2"></i> Lưu thẻ
                     </button>
-                    <button type="button" class="btn-back w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-colors flex justify-center items-center">
+                    <!-- Nút "Quay về trang chủ" chuyển hướng tới studentpage.html -->
+                    <button type="button" id="btn-finish-redirect" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-colors flex justify-center items-center">
                         <i class="fas fa-home mr-2 text-slate-400"></i> Quay về trang chủ
                     </button>
                 </div>
@@ -472,11 +480,106 @@
         let foundStudentData = null;
         let guestTempData = {};
         
-        // CÁC BIẾN LƯU TRẠNG THÁI OTP
+        // CÁC BIẾN LƯU TRẠNG THÁI OTP VÀ ĐẾM NGƯỢC
         let currentOtpStep = ''; // 'sms' hoặc 'email'
         let smsOtpCode = '';
         let emailOtpCode = '';
+        let otpTimestamp = 0;
+        let countdownInterval;
 
+        // HÀM BẮT ĐẦU ĐẾM NGƯỢC THỜI GIAN
+        function startOtpTimers() {
+            clearInterval(countdownInterval); // Xóa bộ đếm cũ nếu có
+            otpTimestamp = Date.now(); // Lưu thời điểm bắt đầu
+            
+            const timerEl = document.getElementById('otp-timer');
+            const resendBtn = document.getElementById('btn-resend-otp');
+            const inputOtp = document.getElementById('input-otp');
+            const submitBtn = document.getElementById('btn-submit-otp');
+            
+            // Khởi tạo trạng thái ban đầu
+            resendBtn.disabled = true;
+            inputOtp.disabled = false;
+            submitBtn.disabled = false;
+            timerEl.classList.replace("text-red-500", "text-slate-600");
+            timerEl.innerHTML = `<i class="far fa-clock mr-1"></i> Hiệu lực: 05:00`;
+
+            countdownInterval = setInterval(() => {
+                let elapsed = Math.floor((Date.now() - otpTimestamp) / 1000);
+                
+                // 1. Xử lý đếm ngược 5 phút (300 giây) hết hạn
+                let remaining = 300 - elapsed; 
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    timerEl.innerHTML = `<i class="fas fa-times-circle mr-1"></i> Mã OTP đã hết hạn!`;
+                    timerEl.classList.replace("text-slate-600", "text-red-500");
+                    inputOtp.disabled = true;
+                    submitBtn.disabled = true;
+                } else {
+                    let m = Math.floor(remaining / 60).toString().padStart(2, '0');
+                    let s = (remaining % 60).toString().padStart(2, '0');
+                    timerEl.innerHTML = `<i class="far fa-clock mr-1"></i> Hiệu lực: ${m}:${s}`;
+                }
+
+                // 2. Xử lý đếm ngược 60 giây nút Gửi lại mã
+                let resendRemaining = 60 - elapsed; 
+                if (resendRemaining <= 0 && remaining > 0) {
+                    resendBtn.disabled = false;
+                    resendBtn.innerText = "Gửi lại mã";
+                } else if (remaining > 0) {
+                    resendBtn.disabled = true;
+                    resendBtn.innerText = `Gửi lại mã (${resendRemaining}s)`;
+                } else {
+                    resendBtn.disabled = false;
+                    resendBtn.innerText = "Gửi lại mã mới";
+                }
+            }, 1000);
+        }
+
+        // XỬ LÝ NÚT BẤM "GỬI LẠI MÃ"
+        document.getElementById('btn-resend-otp').addEventListener('click', async () => {
+            document.getElementById('btn-resend-otp').disabled = true;
+            document.getElementById('btn-resend-otp').innerText = "Đang gửi...";
+
+            if (currentOtpStep === 'sms') {
+                smsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+                const macroId = "a9b42a0f-ffd0-4578-9fd7-d5fd6be9d80d";
+                const macroUrl = `https://trigger.macrodroid.com/${macroId}/send_otp?phone=${encodeURIComponent(guestTempData.phone)}&otp=${smsOtpCode}&t=${new Date().getTime()}`;
+                
+                fetch(macroUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+                
+                const gasUrl = "https://script.google.com/macros/s/AKfycbxGTEalH-yos3juQ6jKdVWC6gus5cDqry8VoeoM3EIO2jX8NNjyBbo6_HdUthaf0s-hQg/exec";
+                fetch(`${gasUrl}?phone=${encodeURIComponent(guestTempData.phone)}&otp=${smsOtpCode}&t=${new Date().getTime()}`, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+
+                startOtpTimers();
+                showToast("Đã gửi lại mã SMS mới!", "success");
+            } 
+            else if (currentOtpStep === 'email') {
+                emailOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+                const timeString = new Date(new Date().getTime() + 15 * 60000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                
+                try {
+                    await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            service_id: 'service_arypin9', 
+                            template_id: 'template_g7k2h2r', 
+                            user_id: 'vC9HO0JtM7CI1HAu5', 
+                            template_params: { email: guestTempData.email, passcode: emailOtpCode, time: timeString } 
+                        })
+                    });
+                    startOtpTimers();
+                    showToast("Đã gửi lại mã Email mới!", "success");
+                } catch (err) {
+                    showToast("Lỗi gửi Email, vui lòng thử lại sau.");
+                    document.getElementById('btn-resend-otp').disabled = false;
+                    document.getElementById('btn-resend-otp').innerText = "Thử lại";
+                }
+            }
+        });
+
+        // CÁC HÀM GIAO DIỆN CƠ BẢN
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
@@ -679,25 +782,16 @@
                 // TẠO MÃ SMS OTP
                 smsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
                 
-                // GIẢI PHÁP MỚI: BẮN THẲNG LỆNH ĐẾN MACRODROID (Vượt qua Google Script)
                 const macroId = "a9b42a0f-ffd0-4578-9fd7-d5fd6be9d80d";
                 const macroUrl = `https://trigger.macrodroid.com/${macroId}/send_otp?phone=${encodeURIComponent(guestTempData.phone)}&otp=${smsOtpCode}&t=${new Date().getTime()}`;
                 
                 // Gọi điện thoại gửi SMS ngay lập tức
-                fetch(macroUrl, { 
-                    method: 'GET', 
-                    mode: 'no-cors', 
-                    cache: 'no-store' 
-                })
-                .then(() => console.log("Đã bắn lệnh SMS thẳng tới điện thoại!"))
-                .catch(e => console.error('Lỗi gửi SMS tới MacroDroid:', e));
+                fetch(macroUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
 
-                // (Tùy chọn) Vẫn gọi Google Script để lưu vào file Sheet lịch sử
+                // Vẫn gọi Google Script để lưu vào file Sheet lịch sử
                 const gasUrl = "https://script.google.com/macros/s/AKfycbxGTEalH-yos3juQ6jKdVWC6gus5cDqry8VoeoM3EIO2jX8NNjyBbo6_HdUthaf0s-hQg/exec";
                 const gasReqUrl = `${gasUrl}?phone=${encodeURIComponent(guestTempData.phone)}&otp=${smsOtpCode}&t=${new Date().getTime()}`;
-                
-                fetch(gasReqUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
-                .catch(e => console.log('Không lưu được lịch sử:', e));
+                fetch(gasReqUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
 
                 // CẤU HÌNH GIAO DIỆN OTP CHO BƯỚC 1 (SMS)
                 currentOtpStep = 'sms';
@@ -710,6 +804,9 @@
                 
                 showToast("Mã OTP đang được gửi đến SĐT của bạn!", "success");
                 showView('view-otp');
+                
+                // Kích hoạt bộ đếm thời gian
+                startOtpTimers();
 
             } catch (err) {
                 console.error("Lỗi:", err);
@@ -721,9 +818,15 @@
             }
         });
 
-        // BƯỚC 2 & 3: XỬ LÝ NHẬP MÃ OTP
+        // BƯỚC 2 & 3: XỬ LÝ NHẬP MÃ OTP VÀ XÁC NHẬN
         document.getElementById('form-verify-otp').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Chặn xác nhận nếu đã quá 5 phút
+            if (Date.now() - otpTimestamp > 300 * 1000) {
+                return showToast("Mã OTP đã hết hạn! Vui lòng ấn Gửi lại mã.");
+            }
+
             const inputVal = document.getElementById('input-otp').value.trim();
             const btnOtpSubmit = document.getElementById('btn-submit-otp');
             const originalOtpText = document.getElementById('text-submit-otp').innerHTML;
@@ -765,6 +868,9 @@
                     
                     Swal.fire({ title: "SĐT đã được xác thực!", text: "Tuyệt vời. Hệ thống vừa gửi mã xác thực thứ 2 đến Email của bạn để hoàn tất.", icon: "success", confirmButtonColor: '#3b82f6' });
 
+                    // Kích hoạt lại bộ đếm cho phần Email
+                    startOtpTimers();
+
                 } catch (err) {
                     Swal.fire({ title: "Lỗi gửi Email", text: "Không thể gửi mã Email lúc này.", icon: "error", confirmButtonColor: '#3b82f6' });
                 } finally {
@@ -790,6 +896,7 @@
                     };
 
                     await setDoc(doc(collection(db, 'guests'), guestId), fullData);
+                    clearInterval(countdownInterval); // Dừng đếm ngược khi đã hoàn thành
                     showDigitalCard(fullData, 'guest', guestId);
                     Swal.fire({ title: "Đăng ký thành công!", text: `Mã thẻ của bạn là ${guestId}. Vui lòng lưu lại thẻ này!`, icon: "success", confirmButtonColor: '#3b82f6' });
                 } catch (err) { 
@@ -803,7 +910,8 @@
 
         // HÀM ĐIỀU HƯỚNG CHUNG
         document.getElementById('nav-home').addEventListener('click', () => {
-            currentOtpStep = ''; // Reset trạng thái
+            currentOtpStep = '';
+            clearInterval(countdownInterval);
             document.getElementById('input-student-id').value = '';
             showView('view-home');
         });
@@ -811,12 +919,20 @@
         
         // NÚT ĐỔI THÔNG TIN (QUAY LẠI TỪ MÀN HÌNH OTP)
         document.getElementById('btn-back-to-guest').addEventListener('click', () => {
-            currentOtpStep = ''; // Reset trạng thái
+            currentOtpStep = ''; 
+            clearInterval(countdownInterval);
             showView('view-guest-form');
         });
 
+        // Nút "Quay về trang chủ" Ở MÀN HÌNH DIGITAL CARD -> Chuyển hướng tới trang studentpage.html
+        document.getElementById('btn-finish-redirect').addEventListener('click', () => {
+            window.location.href = 'studentpage.html';
+        });
+
+        // Các nút Quay lại khác (Về trang check mã mặc định)
         document.querySelectorAll('.btn-back').forEach(b => b.addEventListener('click', () => {
-            currentOtpStep = ''; // Reset trạng thái
+            currentOtpStep = ''; 
+            clearInterval(countdownInterval);
             document.getElementById('input-student-id').value = '';
             showView('view-home');
         }));
